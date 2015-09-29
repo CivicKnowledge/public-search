@@ -12,7 +12,7 @@ It's best to setup a virtualenv, install ``public-source``, then install ambry:
     $ python setup.py develop
     
     
-Then, install  ambry and import some bundles. Should also buld one or two. 
+Then, install  ambry and import some bundles. Should also build one or two. 
 
     $ ambry config install 
     $ ambry import test/bundles/
