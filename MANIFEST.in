@@ -1,7 +1,6 @@
 include requirements.txt
 include requirements/*
-include INSTALL
-include README.md
+include README.rst
 include LICENSE
 recursive-include public_search/ui/templates *
 recursive-include public_search/ui/templates/bundle/parts *
