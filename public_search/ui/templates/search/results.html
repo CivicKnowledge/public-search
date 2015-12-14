@@ -3,23 +3,21 @@
 {% for r in results -%}
 <div class="result">
     <h2>{{r.bundle.metadata.about.title}}<small>
-        <p>{{r.bundle.identity.vid}} <a href="{{bundle_path(r.bundle.identity.vid)}}">{{r.vname}}</a></p>
+        <p>{{r.bundle.identity.vid}} <a href="{{bundle_path(r.bundle.identity.vid)}}">{{r.bundle.identity.vname}}</a></p>
     </small></h2>
-    {% if r.bundle.metadata.about.summary %} <p>{{r.bundle.metadata.about.summary}}</p>{% endif %}
+    {% if r.bundle.metadata.about.summary.html %} <p>{{r.bundle.metadata.about.summary.html|safe}}</p>{% endif %}
     {% if r.partitions %}
-    <p> {{r.partitions|length}} partitions.
-        {% if r.partition_count > r.partitions|length %}( Only {{r.partitions|length}} shown ) {% endif %}
-    </p>
+    <p> {{r.partitions|length}} partitions </p>
     {% endif %}
 
-    {% for p in r.partitions -%}
+    {% for p in r.partition_records -%}
+
         <div class="search-result-partition">
 
-            {% if p.table.description %}
-            <h3><a href="{{partition_path(b,p)}}">{{p.table.description}}</a>
-                <small><p>{{p.vid}} {{p.name}}</p></small></h3>
-            {% else %}
-            <h3><a href="{{partition_path(b,p)}}">{{p.name}}</a></h3>
+            {% if p.table %}
+                <h3><a href="{{partition_path(p.vid)}}">{{p.table.name}} {{ p.table.description }}</a>
+                    <small><p>{{p.vid}} {{p.name}}</p></small>
+                </h3>
             {% endif %}
 
             {%if p.geo_coverage and p.geo_coverage.names%}

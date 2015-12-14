@@ -203,3 +203,16 @@ visible, but its clearly wrong -- it should adjust to the actual tool tip size.
   height: 12em;
   width: 15em;
 }
+
+/* Offset the anchors ( for instance on the metadata page ) so the anchored headings dont
+appear under the fixed page header. */
+a.anchor {
+    display: block;
+    position: relative;
+    top: -75px;
+    visibility: hidden;
+}
+
+.no-wrap {
+    white-space:nowrap;
+}

@@ -1,6 +1,12 @@
-<!-- Documentation -->
-{% if b.meta.documentation and  b.meta.documentation.main -%}
-    <div class="documentation_section" >
-    {{b.meta.documentation.main}}
-    </div>
-{% endif -%}
+{% extends "bundle/parts/layout.html" %}
+{% from 'bundle/parts/tabs.html' import tabs %}
+
+{% block body %}
+
+{{tabs('documentation',vid)}}
+{% include 'bundle/parts/ext_documentation.html' -%}
+{% include 'bundle/parts/documentation.html' -%}
+{% include 'bundle/parts/tables.html' -%}
+{% endblock %}
+
+

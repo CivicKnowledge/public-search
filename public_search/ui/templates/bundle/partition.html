@@ -7,13 +7,26 @@
     <h1 class="title">Partition: {{p.fqname}}</h1>
     <p>From: <a href="{{bundle_path(p.dataset.vid)}}">{{p.dataset.fqname}}</a></p>
 {% endblock %}
-
+{% block page_css %}
+    .popover {
+        min-width: 40%;
+    }
+{%  endblock %}
 {% block body %}
 <div>
 
     <div>
         <h2>Table {{p.table.name}}</h2>
         <p>{{p.table.description}}</p>
+
+        {% if docs %}
+            <dl>
+            <h3>Documentation</h3>
+            {% for d in docs %}
+                <dt><a href="{{d.url}}" target="_blank">{{d.title}}</a></dt><dd>{{ d.description }}</dd>
+            {% endfor %}
+            </dl>
+        {% endif %}
 
          {%if p.geo_coverage and p.geo_coverage.names%}
             <p><span class="label label-default">Geography:</span>&nbsp;
@@ -34,52 +47,46 @@
             <tr>
                 <th>#</th>
                 <th>Column</th>
-                <th>Alt Name</th>
+                <th>LOM</th>
                 <th>Type</th>
-                <th>Size</th>
                 <th>Description</th>
-                <th>Unique Values</th>
-                <th>Values ( &mu;&plusmn;2&sigma; range )</th>
+                <th>Unique Values /<br/>
+                    Histogram ( &mu;&plusmn;2&sigma; range )</th>
                 <th>Vid</th>
-                <th>Proto Id</th>
 
             </tr>
 
-            {% for c in p.table.columns.values()|sort(attribute='sequence_id') -%}
+            {% for c in p.table.columns|sort(attribute='sequence_id') -%}
             <tr>
                 <td>{{c.sequence_id}}</td>
                 <td>{{c.name}}</td>
-                <td>{{c.altname}}</td>
+                <td>{{p.stats_dict[c.name].lom}}</td>
                 <td>{{c.datatype}}</td>
-                <td>{{c.size}}</td>
                 <td>{{c.description}}</td>
+                <td >
 
-                <td>
-                    {{p.colstats.get(c.id_).nuniques}}
+                    <a tabindex = "0"
+                        data-toggle="popover" data-placement="left" data-trigger="hover"
+                        data-title="Selected Values"
+                        data-content="{{ p.stats_dict[c.name].uvalues|sort|join(', ') }}" >
+                        {%  if p.stats_dict[c.name].lom in ('o','n') %}
+                            {{p.stats_dict[c.name].nuniques}} Uniques
+                        {% else %}
+                            <div><span class="histospark">
+                            {% for e in p.stats_dict[c.name].hist %}{{e}},{% endfor %}
+                            </span></div>
+                            <div><span class="boxplot">
+                                {{p.stats_dict[c.name].min }},
+                                {{p.stats_dict[c.name].p25}},
+                                {{p.stats_dict[c.name].p50}},
+                                {{p.stats_dict[c.name].p75}},
+                                {{p.stats_dict[c.name].max}}
+                            </span></div>
+                        {% endif %}
+                    </a>
                 </td>
-                <td>
-                    {%  if  p.colstats.get(c.id_).hist %}
-                       <div><span class="histospark">
-                        {% for e in p.colstats.get(c.id_).hist.get('values') %}{{e[1]}},{% endfor %}
-                        </span></div>
-                        <div><span class="boxplot">
-                            {{ p.colstats.get(c.id_).min }},
-                            {{p.colstats.get(c.id_).p25}},
-                            {{p.colstats.get(c.id_).p50}},
-                            {{p.colstats.get(c.id_).p75}},
-                            {{p.colstats.get(c.id_).max}}
-                        </span></div>
-                    {% else %}
-                        {{ p.colstats.get(c.id_).uvalues|sort|join(', ') }}
-                    {% endif %}
 
-                </td>
                 <td>{%if c.sequence_id == 1 %}{{p.table.vid}}{% else %}{{c.vid}}{% endif %}</td>
-                <td>{%if c.proto_vid %}
-                    <a href="{{proto_vid_path(c.proto_vid)}}">{{c.proto_vid}} ({{tc_obj(c.proto_vid).name}})</a>
-                    {%endif-%}
-
-                </td>
 
             </tr>
             {% endfor %}
@@ -116,7 +123,9 @@
 {{ super() }}
     <script language="javascript" type="text/javascript" src="/js/sparklines.js"></script>
     <script>
+
         $(function() {
+         $('[data-toggle="popover"]').popover()
          $('.histospark').sparkline('html', {height: 25, barWidth: 8, type: 'bar', barColor: 'blue'} );
          $('.boxplot').sparkline('html', {height: 25, width: 100, type: 'box', barColor: 'blue', raw: true,
              showOutliers:false } );

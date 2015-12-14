@@ -28,10 +28,12 @@ class AmbryAppContext(object):
     """Ambry specific objects for the application context"""
 
     def __init__(self):
-        from ambry import get_library
+        from ambry.library import Library
         from render import Renderer
+        from ambry.run import get_runconfig
 
-        self.library = get_library()
+        rc = get_runconfig()
+        self.library = Library(rc, read_only=True)
         self.renderer = Renderer(self.library)
 
         import logging

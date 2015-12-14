@@ -20,10 +20,11 @@ from flask import Response, make_response, url_for
 
 from ambry.identity import ObjectNumber, NotObjectNumberError, Identity
 from ambry.bundle import Bundle
-from ambry.library import new_library
+from ambry.orm.partition import Partition
 from ambry.orm import Table
 from ambry.orm.exc import NotFoundError
 from ambry.util import get_logger
+from ambry.util import pretty_time
 
 import templates as tdir
 
@@ -46,54 +47,25 @@ if 'isin' not in jinja2.tests.TESTS:
     jinja2.tests.TESTS['isin'] = test_isin
 
 
-def pretty_time(s):
-    """Pretty print time in seconds.
-
-    From:
-    http://stackoverflow.com/a/24542445/1144479
-
-    """
-
-    intervals = (
-        ('weeks', 604800),  # 60 * 60 * 24 * 7
-        ('days', 86400),  # 60 * 60 * 24
-        ('hours', 3600),  # 60 * 60
-        ('minutes', 60),
-        ('seconds', 1),
-    )
-
-    def display_time(seconds, granularity=2):
-        result = []
-
-        for name, count in intervals:
-            value = seconds // count
-            if value:
-                seconds -= value * count
-                if value == 1:
-                    name = name.rstrip('s')
-                result.append('{} {}'.format(value, name))
-
-        return ', '.join(result[:granularity])
-
-    for i, (name, limit) in enumerate(intervals):
-
-        if s > limit:
-            return display_time(int(s), 4 - i)
 
 
-def resolve(t):
-    if isinstance(t, string_types):
-        return t
-    elif isinstance(t, (Identity, Table)):
-        return t.vid
-    elif isinstance(t, Bundle):
-        return t.identity.vid
-    elif isinstance(t, dict):
-        if 'identity' in t:
-            return t['identity'].get('vid', None)
+
+def resolve(ref):
+    if isinstance(ref, string_types):
+        return ref
+    elif isinstance(ref, (Identity, Table)):
+        return ref.vid
+    elif isinstance(ref, Bundle):
+        return ref.identity.vid
+    elif isinstance(ref, Partition):
+        return ref.identity.vid
+    elif isinstance(ref, dict):
+        if 'identity' in ref:
+            return ref['identity'].get('vid', None)
         else:
-            return t.get('vid', None)
+            return ref.get('vid', None)
     else:
+        raise Exception("Failed to resolve reference: '{}' ".format(ref))
         return None
 
 
@@ -190,16 +162,19 @@ def tc_obj(ref):
 
 
 def partition_path(b, p=None):
+
     if p is None:
         p = b
-        try:
-            on = ObjectNumber.parse(p)
-            b = str(on.as_dataset)
-        except NotObjectNumberError:
-            return None
-        except AttributeError:
-            b = str(on)
-            raise
+
+    try:
+        on = ObjectNumber.parse(p)
+        b = str(on.as_dataset)
+    except NotObjectNumberError as e:
+        return None
+    except AttributeError:
+        b = str(on)
+        raise
+
 
     return '/bundles/{}/partitions/{}.html'.format(resolve(b), resolve(p))
 
@@ -294,7 +269,7 @@ class Renderer(object):
     def cts(self, ct, session=None):
         """Return a clone with the content type set, and maybe the session"""
 
-        return Renderer(self.library, self.cg, self.env, content_type = ct, session = session)
+        return Renderer(self.library, env=self.env, content_type = ct, session = session)
 
     def cc(self):
         """Return common context values. These are primarily helper functions
@@ -311,12 +286,24 @@ class Renderer(object):
             return wrapper
 
         return {
+            'url_for': url_for,
+            'from_root': lambda x: x,
+            'schema_path': schema_path,
+            'bundle_path': bundle_path,
+            'table_path': table_path,
+            'partition_path': partition_path,
+            'getattr': getattr,
+        }
+
+
+        # Old Values
+        return {
+            'url_for': url_for,
             'iter_as_dict': iter_as_dict,
             'format_sql': format_sql,
             'pretty_time': pretty_time,
-            'from_root': lambda x: x,
-            'bundle_path': bundle_path,
-            'schema_path': schema_path,
+
+
             'table_path': table_path,
             'partition_path': partition_path,
             'store_path': store_path,
@@ -329,18 +316,20 @@ class Renderer(object):
             'bundle_sort': lambda l, key: sorted(l, key=lambda x: x['identity'][key])}
 
     def render(self, template, *args, **kwargs):
+        from flask import render_template
 
         kwargs.update(self.cc())
         kwargs['l'] = self.library
 
-        if isinstance(template, string_types):
-            template = self.env.get_template(template)
+        #if isinstance(template, string_types):
+        #    template = self.env.get_template(template)
 
         if self.content_type == 'json':
             return Response(dumps(kwargs, cls=JSONEncoder, indent=4),mimetype='application/json')
 
         else:
-            return template.render(*args, **kwargs)
+            return render_template(template, *args, **kwargs)
+            #return template.render(*args, **kwargs)
 
     @property
     def css_dir(self):
@@ -353,25 +342,6 @@ class Renderer(object):
     def js_dir(self):
         return os.path.join(os.path.abspath(os.path.dirname(tdir.__file__)), 'js')
 
-    def home_search(self):
-
-        return self.render('index.html')
-
-    def bundle_index(self):
-
-        cxt = dict(
-            bundles = [ b for b in self.library.bundles]
-        )
-
-        return self.render('toc/bundles.html', **cxt)
-
-
-    def bundle(self, vid):
-        cxt = dict(
-            b = self.library.bundle(vid)
-        )
-
-        return self.render('bundle/index.html', **cxt)
 
     def bundle_search(self, terms):
 

@@ -16,7 +16,7 @@
         <th>#</th>
         <th>VID</th>
         <th>Name</th>
-        <th>Versions</th>
+        <th>State</th>
         <th>Title</th>
 
     </tr>
@@ -26,16 +26,7 @@
             <td class="toc_vid"><a href="{{bundle_path(b)}}">{{b.identity.vid}}</a></td>
 
             <td class="toc_name">{{b.identity.name}}</td>
-            <td class="toc_version">
-                <ul  class="list-inline">
-                    <li><a href="{{bundle_path(b)}}">{{b.version}}</a></li>
-                    {% if b.other_versions -%}
-                    {% for id_, vb in b.other_versions.items() -%}
-                    <li><a href="{{bundle_path(v)}}">{{vb.version}}</a></li>
-                    {% endfor %}
-                    {% endif -%}
-                </ul>
-            </td>
+            <td class="toc_version">{{b.buildstate.state.current}}</td>
             <td class="toc_title" data-toggle="tooltip" data-placement="left"
                 title="{{(b.metadata.about.summary or '')|truncate(length=600)}}">
                 {{b.metadata.about.title or ''}}</td>

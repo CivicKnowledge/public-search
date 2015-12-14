@@ -8,7 +8,9 @@
     <link href="/css/spinners.css" type="text/css"  rel="stylesheet">
     <link href="/css/style.css" rel="stylesheet">
     <link href="/css/pygments.css" rel="stylesheet">
-
+    <style>
+        {% block page_css %}{% endblock %}
+    </style>
     {% endblock %}
 </head>
 <body>
@@ -34,7 +36,6 @@
             <ul class="nav navbar-nav">
                 <li><a href="{{from_root('/collections.html')}}">Collections</a></li>
             </ul>
-
 
         </nav>
     </div>
