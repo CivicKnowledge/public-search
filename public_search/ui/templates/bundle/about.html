@@ -1,13 +1,13 @@
-{% extends "bundle/parts/layout.html" %}
-{% from 'bundle/parts/tabs.html' import tabs %}
+{% extends "bundle-parts/layout.html" %}
+{% from 'bundle-parts/tabs.html' import tabs %}
 
 {% block body %}
 
     {{tabs('about',vid)}}
 
-    {% include 'bundle/parts/isin.html' -%}
-    {% include 'bundle/parts/contact.html' -%}
-    {% include 'bundle/parts/sources.html' -%}
+    {% include 'bundle-parts/isin.html' -%}
+    {% include 'bundle-parts/contact.html' -%}
+    {% include 'bundle-parts/sources.html' -%}
 
 {% endblock %}
 

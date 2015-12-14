@@ -26,27 +26,6 @@ ps_meta = imp.load_source('_meta', 'public_search/__meta__.py')
 
 packages = find_packages()
 
-def find_package_data():
-    """ Returns package_data, because setuptools is too stupid to handle nested directories,
-    or at least it ignores depth greater than 2
-
-    """
-
-    l = list()
-    for start in ('public_search/ui/templates',):
-        for root, dirs, files in os.walk(start):
-
-            for f in files:
-
-                if f.endswith('.pyc'):
-                    continue
-
-                path = os.path.join(root, f).replace('ambry/', '')
-
-                l.append(path)
-
-    return {'public-search': l}
-
 install_requires = parse_requirements('requirements/base.txt', session=uuid.uuid1())
 tests_require = parse_requirements('requirements/dev.txt', session=uuid.uuid1())
 
@@ -64,13 +43,13 @@ classifiers = [
 ]
 
 
+
 setup(
     name='public-search',
     version=ps_meta.__version__,
     description='Ambry Public Search Web Application',
     long_description=readme,
     packages=packages,
-    package_data=find_package_data(),
     include_package_data=True,
     zip_safe=False,
     install_requires=[x for x in reversed([str(x.req) for x in install_requires])],
