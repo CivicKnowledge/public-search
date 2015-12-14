@@ -4,3 +4,4 @@ include INSTALL
 include README.md
 include LICENSE
 recursive-include public_search/ui/templates *
+recursive-include public_search/ui/templates/bundle/parts *
