@@ -1,0 +1,71 @@
+{% extends "layout.html" %}
+{% block title %}{{b.metadata.about.title}}{% endblock %}
+{% block head %}
+    {{ super() }}
+{% endblock %}
+{% block masthead %}
+    <h1 class="title">{{b.metadata.about.title.html|safe}}</h1>
+    <p>Dataset {{b.identity.fqname}}</p>
+    {% if b.metadata.about.summary -%}<p>{{b.metadata.about.summary.html|safe}}</p>{% endif -%}
+{% endblock %}
+
+{% block body %}
+
+<!-- Nav tabs -->
+    <ul class="nav nav-tabs" role="tablist">
+        <li role="presentation" class="active">
+            <a href="#about-tab"  role="tab" >About</a>
+        </li>
+        <li role="presentation">
+            <a href="#partitions-tab" role="tab">Data Files</a>
+        </li>
+        <li role="presentation">
+            <a href="#tables-tab"  role="tab" >Tables</a>
+        </li>
+        <li role="presentation">
+            <a href="#build-tab" role="tab" >Build</a>
+        </li>
+    </ul>
+
+
+{% endblock %}
+
+{% block tailjs %}
+    {{ super() }}
+    <script>
+    // Make tabs persistent on back
+    $(document).ready(function() {
+        // show active tab on reload
+        if (location.hash !== '') $('a[href="' + location.hash + '"]').tab('show');
+
+        // remember the hash in the URL without jumping
+        $('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
+           if(history.pushState) {
+                history.pushState(null, null, '#'+$(e.target).attr('href').substr(1));
+           } else {
+                location.hash = '#'+$(e.target).attr('href').substr(1);
+           }
+        });
+    });
+
+        //Live search partition table.
+    $("#partition-search").keyup(function () {
+        var value = this.value.toLowerCase().trim();
+
+        $("#partition-list tr").each(function (index) {
+            if (!index) return;
+            $(this).find("td").each(function () {
+                var id = $(this).text().toLowerCase().trim();
+                var not_found = (id.indexOf(value) == -1);
+                $(this).closest('tr').toggle(!not_found);
+                return not_found;
+            });
+        });
+    });
+
+
+    </script>
+{% endblock %}
+
+
+

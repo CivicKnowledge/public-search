@@ -1,0 +1,31 @@
+<h2>Sources</h2>
+{% if b.sources and b.sources|length < 40 -%}
+<div >
+    <table id="sources-table" class="table table_condensed ">
+    <tr>
+        {% for h in sources_header %}
+            <th>{{ h }}</th>
+        {% endfor -%}
+    </tr>
+    {% for s in b.sources|sort(attribute='name') %}
+        <tr>
+        {% for h in sources_header %}
+            {%  if h == 'ref' %}
+                <td><a href="{{ s.url }}">{{ s.abbrev_url}}</a></td>
+            {% else %}
+                <td>{{ getattr(s, h) }}</td>
+            {% endif %}
+
+        {% endfor -%}
+        </tr>
+
+    {% endfor -%}
+    </table>
+</div>
+{% elif b.sources %}
+<div>
+    <p>Too many sources to display. Download the
+        <a href="{{ url_for('bundle_file',vid=vid, name='sources.csv') }}">sources.csv</a>
+        file for a complete list.</p>
+</div>
+{% endif -%}

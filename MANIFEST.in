@@ -3,5 +3,4 @@ include requirements/*
 include README.rst
 include LICENSE
 recursive-include public_search/ui/templates *
-recursive-include public_search/ui/templates/bundle/parts *
 

@@ -1,0 +1,7 @@
+<!-- Documentation -->
+{% if b.documentation -%}
+    <div class="documentation_section" >
+     <hr>
+     {{ b.documentation.html|safe }}
+    </div>
+{% endif -%}
