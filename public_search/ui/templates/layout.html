@@ -15,7 +15,6 @@
 </head>
 <body>
 <div id="main">
-
     <div id="header" class="navbar navbar-default navbar-fixed-top"> 
         <div class="navbar-header">
             <a class="navbar-brand" href="/">Ambry</a>
@@ -23,6 +22,7 @@
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul class="nav navbar-nav"> 
                 <li><a href="{{ url_for('bundle_index') }}">Datasets</a></li> 
+                <li><a href="#" class="nav-bar-title">{% block masthead %} {% endblock %}</a></li>
             </ul>
 
         </div>
@@ -32,20 +32,19 @@
         <div class="row">
             <div class="col-md-12 pull-right">
                 <div>
-                    <div class="page-header">
-                        {% block masthead %} {% endblock %}
-                    </div>
-
-                    <div>
-                        {% block body %} {% endblock %}
-                    </div>
+                    {% block pageheader %} {% endblock %}
+                    {% block body %} {% endblock %}
                 </div>
+                <footer class="col-md-12 footer">
+                      <div class="pull-left">
+                          {% block footer %}
+                        ©2015 Civic Knowledge, data for social development.{% endblock %}
+                      </div>
+                      <div class="pull-right">
+                        {% block json_button %} {% endblock %}
+                      </div>
 
-                <div class="col-md-12 footer">
-                    <ul class="nav navbar-nav">{% block footer %}
-                        Civic Knowledge, data for social development.
-                    {% endblock %}</ul>
-                </div>
+                </footer>
             </div>
         </div>
     </div>

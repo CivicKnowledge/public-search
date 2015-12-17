@@ -214,3 +214,9 @@ a.anchor {
 .no-wrap {
     white-space:nowrap;
 }
+
+.navbar  ul  li  .nav-bar-title {
+    font-size: 22px;
+    color: #3B666B;
+
+}

@@ -14,7 +14,7 @@
         {%- if loop.index < 10  and p.table%}
             <div class="search-result-partition">
                 <a href="{{partition_path(p.vid)}}">{{ p.table.description }}</a>
-                <small><p>{{p.table.name}}. {{ p.sub_description }} </p></small>
+                <small><p>{{ p.sub_description }} </p></small>
             </div>
         {% endif %}
 

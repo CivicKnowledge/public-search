@@ -1,4 +1,7 @@
 
+{% macro json_button(page_name) -%}
+<a href="{{ url_for(page_name,**kwargs) }}"><span class="label label-primary">{json}</span></a>
+{% endmacro %}
 
 {% macro modal(id, title, summary = '', tabindex = -1) -%}
 <!-- Modal -->

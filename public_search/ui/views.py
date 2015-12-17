@@ -33,7 +33,7 @@ def bundle_index():
         **r.cc()
     )
 
-    return r.render('toc/bundles.html', **cxt)
+    return r.render('bundles.html', **cxt)
 
 
 @app.route('/json')

@@ -3,10 +3,12 @@
 {% block head %}
     {{ super() }}
 {% endblock %}
-{% block masthead %}
-    <h1 class="title">{{b.metadata.about.title.html|safe}}</h1>
-    <small>{{b.identity.fqname}}</small>
-    {% if b.metadata.about.summary -%}<p>{{b.metadata.about.summary.html|safe}}</p>{% endif -%}
+{% block masthead %}{{b.metadata.about.title.html|safe}}{% endblock %}
+{% block pageheader %}
+<div class="page-header">
+{% if b.metadata.about.summary -%}<p>{{b.metadata.about.summary.html|safe}}</p>{% endif -%}
+<small>{{b.identity.fqname}}</small>
+</div>
 {% endblock %}
 
 {% block body %}
