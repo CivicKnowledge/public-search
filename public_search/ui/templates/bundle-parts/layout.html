@@ -5,28 +5,11 @@
 {% endblock %}
 {% block masthead %}
     <h1 class="title">{{b.metadata.about.title.html|safe}}</h1>
-    <p>Dataset {{b.identity.fqname}}</p>
+    <small>{{b.identity.fqname}}</small>
     {% if b.metadata.about.summary -%}<p>{{b.metadata.about.summary.html|safe}}</p>{% endif -%}
 {% endblock %}
 
 {% block body %}
-
-<!-- Nav tabs -->
-    <ul class="nav nav-tabs" role="tablist">
-        <li role="presentation" class="active">
-            <a href="#about-tab"  role="tab" >About</a>
-        </li>
-        <li role="presentation">
-            <a href="#partitions-tab" role="tab">Data Files</a>
-        </li>
-        <li role="presentation">
-            <a href="#tables-tab"  role="tab" >Tables</a>
-        </li>
-        <li role="presentation">
-            <a href="#build-tab" role="tab" >Build</a>
-        </li>
-    </ul>
-
 
 {% endblock %}
 

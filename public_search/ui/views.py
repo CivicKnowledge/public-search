@@ -23,10 +23,10 @@ def index():
     return aac().renderer.render('index.html')
 
 
-@app.route('/bundles.<ct>')
-def bundle_index(ct):
+@app.route('/bundles')
+def bundle_index():
 
-    r = aac().renderer.cts(ct)
+    r = aac().renderer
 
     cxt = dict(
         bundles=[b for b in r.library.bundles],
@@ -34,6 +34,22 @@ def bundle_index(ct):
     )
 
     return r.render('toc/bundles.html', **cxt)
+
+
+@app.route('/json')
+def bundle_index_json():
+    import os
+
+    r = aac().renderer
+
+    def augment(o):
+        o['bundle_url'] = url_for('bundle_json', vid=o['vid'])
+        return o
+
+    return r.json(
+        bundles=[augment(b.dataset.dict) for b in r.library.bundles]
+
+    )
 
 @app.route('/bundles/<vid>.<ct>')
 def bundle_about(vid, ct):
@@ -48,6 +64,26 @@ def bundle_about(vid, ct):
     )
 
     return r.render('bundle/about.html', **cxt)
+
+@app.route('/json/bundle/<vid>')
+def bundle_json(vid):
+
+    r = aac().renderer
+
+    b = r.library.bundle(vid)
+
+    def aug_dataset(o):
+        return o
+
+    def aug_partition(o):
+        del o['stats']
+        return o
+
+    return r.json(
+        dataset=aug_dataset(b.dataset.dict),
+        partitions = [ aug_partition(p.dict) for p in b.dataset.partitions ]
+
+    )
 
 @app.route('/bundles/<vid>/meta.<ct>')
 def bundle_meta(vid, ct):

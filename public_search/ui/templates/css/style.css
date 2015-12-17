@@ -188,11 +188,9 @@ body {
 }
 
 div.search-result-partition {
-    border-radius: 5px;
-    border: 1px solid #aaaaaa;
-    background: #EEE;
-    padding: 5px;
-    margin-bottom: 5px;
+    margin: 0;
+    padding: 0;
+    margin-left: 3em;
 }
 
 /* The Tooltips for the sparklines don't format properly. This makes all of the tip

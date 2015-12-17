@@ -331,6 +331,10 @@ class Renderer(object):
             return render_template(template, *args, **kwargs)
             #return template.render(*args, **kwargs)
 
+    def json(self, **kwargs):
+        return Response(dumps(kwargs, cls=JSONEncoder), mimetype='application/json')
+
+
     @property
     def css_dir(self):
         return os.path.join(os.path.abspath(os.path.dirname(tdir.__file__)), 'css')
@@ -347,10 +351,4 @@ class Renderer(object):
 
         results = list(self.library.search.search(terms))
 
-        for r in results:
-            print(r.vid, r.bundle.metadata.about.title)
-            for p in r.partition_records:
-                if p:
-                    print('    ', p.vid, p.vname)
-
-        return self.render('search/results.html', results=results)
+        return self.render('search/results.html', result_count = len(results), results=results[:10])

@@ -4,8 +4,10 @@
     {{ super() }}
 {% endblock %}
 {% block masthead %}
-    <h1 class="title">Partition: {{p.fqname}}</h1>
-    <p>From: <a href="{{bundle_path(p.dataset.vid)}}">{{p.dataset.fqname}}</a></p>
+    <h1 class="title">{{p.name}} </h1>
+    <p>{{ p.description }}. {{ p.sub_description }}</p>
+    <p>From: <a href="{{bundle_path(p.dataset.vid)}}">{{p.dataset.fqname}}</a>. Table: <a href="{{table_path(b,p.table)}}">{{p.table.name}}</a></p>
+    <a class="btn btn-primary btn-sm" href="{{url_for('stream_file', pvid=p.vid, ct='csv')}}">CSV</a>
 {% endblock %}
 {% block page_css %}
     .popover {
@@ -16,8 +18,7 @@
 <div>
 
     <div>
-        <h2>Table {{p.table.name}}</h2>
-        <p>{{p.table.description}}</p>
+
 
         {% if docs %}
             <dl>
@@ -64,26 +65,25 @@
                 <td>{{c.datatype}}</td>
                 <td>{{c.description}}</td>
                 <td >
-
-                    <a tabindex = "0"
+                    {%  if p.stats_dict[c.name].lom in ('o','n') %}
+                        <a tabindex = "0"
                         data-toggle="popover" data-placement="left" data-trigger="hover"
                         data-title="Selected Values"
-                        data-content="{{ p.stats_dict[c.name].uvalues|sort|join(', ') }}" >
-                        {%  if p.stats_dict[c.name].lom in ('o','n') %}
-                            {{p.stats_dict[c.name].nuniques}} Uniques
-                        {% else %}
-                            <div><span class="histospark">
-                            {% for e in p.stats_dict[c.name].hist %}{{e}},{% endfor %}
-                            </span></div>
-                            <div><span class="boxplot">
-                                {{p.stats_dict[c.name].min }},
-                                {{p.stats_dict[c.name].p25}},
-                                {{p.stats_dict[c.name].p50}},
-                                {{p.stats_dict[c.name].p75}},
-                                {{p.stats_dict[c.name].max}}
-                            </span></div>
-                        {% endif %}
-                    </a>
+                        data-content="{{ p.stats_dict[c.name].uvalues|join(', ') }}" >
+                        {{p.stats_dict[c.name].nuniques}} Uniques </a>
+                    {% else %}
+                        <div><span class="histospark">
+                        {% for e in p.stats_dict[c.name].hist %}{{e}},{% endfor %}
+                        </span></div>
+                        <div><span class="boxplot">
+                            {{p.stats_dict[c.name].min }},
+                            {{p.stats_dict[c.name].p25}},
+                            {{p.stats_dict[c.name].p50}},
+                            {{p.stats_dict[c.name].p50}},
+                            {{p.stats_dict[c.name].max}}
+                        </span></div>
+                    {% endif %}
+
                 </td>
 
                 <td>{%if c.sequence_id == 1 %}{{p.table.vid}}{% else %}{{c.vid}}{% endif %}</td>
@@ -127,8 +127,9 @@
         $(function() {
          $('[data-toggle="popover"]').popover()
          $('.histospark').sparkline('html', {height: 25, barWidth: 8, type: 'bar', barColor: 'blue'} );
-         $('.boxplot').sparkline('html', {height: 25, width: 100, type: 'box', barColor: 'blue', raw: true,
-             showOutliers:false } );
+         $('.boxplot').sparkline('html', {height: 25, width: 100, type: 'box',
+             barColor: 'blue', raw: true,
+             showOutliers: false } );
         });
     </script>
 {% endblock %}

@@ -23,21 +23,18 @@
         <tr>
 
             <th style="width: 20em;">Name</th>
-            <th>Table</th>
-            <th>Download</th>
+
             <th>Description</th>
-            <th>id</th>
+            <th>Download</th>
 
             {% if w %}<th>Installed</th>{% endif %}
         </tr>
         {% for p in b.partitions|sort(attribute='identity.name') -%}
         <tr>
-            <td class="col-name"><a href="{{partition_path(p.vid)}}">{{p.name}}</a></td>
-            <td class="table-name">{{p.table.name}}</td>
+            <td class="col-name"><a href="{{partition_path(p.vid)}}">{{p.name}}</a><br/>
+            <small>{{p.vid}}</small></td>
+            <td>{{p.description}}<br/><small>{{ p.sub_description }}</small></td>
             <td ><a class="btn btn-primary btn-sm" href="{{url_for('stream_file', pvid=p.vid, ct='csv')}}">CSV</a></td>
-            <td>{{p.description}}</td>
-            <td>{{p.vid}}</td>
-
         </tr>
         {% endfor %}
     </table>
