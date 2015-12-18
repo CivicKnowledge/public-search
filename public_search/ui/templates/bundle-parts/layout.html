@@ -1,4 +1,5 @@
 {% extends "layout.html" %}
+{% from "macros.html" import json_button%}
 {% block title %}{{b.metadata.about.title}}{% endblock %}
 {% block head %}
     {{ super() }}
@@ -6,8 +7,8 @@
 {% block masthead %}{{b.metadata.about.title.html|safe}}{% endblock %}
 {% block pageheader %}
 <div class="page-header">
-{% if b.metadata.about.summary -%}<p>{{b.metadata.about.summary.html|safe}}</p>{% endif -%}
-<small>{{b.identity.fqname}}</small>
+    <div class="summary">{% if b.metadata.about.summary -%}{{b.metadata.about.summary.html|safe}}{% endif -%}</div>
+    <div><small>{{b.identity.fqname}}</small></div>
 </div>
 {% endblock %}
 

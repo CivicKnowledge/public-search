@@ -8,7 +8,7 @@ from flask.json import jsonify
 
 @app.teardown_appcontext
 def close_connection(exception):
-    pass
+    aac().renderer.library.close()
 
 
 @app.errorhandler(500)
@@ -42,12 +42,17 @@ def bundle_index_json():
 
     r = aac().renderer
 
-    def augment(o):
+    def augment(b):
+        o = b.dataset.dict
         o['bundle_url'] = url_for('bundle_json', vid=o['vid'])
+        o['title'] = b.metadata.about.title
+        o['summary'] = b.metadata.about.summary
+        o['created'] = b.buildstate.new_datetime.isoformat() if b.buildstate.new_datetime else None
+        o['updated'] = b.buildstate.last_datetime.isoformat() if b.buildstate.last_datetime else None
         return o
 
     return r.json(
-        bundles=[augment(b.dataset.dict) for b in r.library.bundles]
+        bundles=[augment(b) for b in r.library.bundles]
 
     )
 
@@ -72,16 +77,59 @@ def bundle_json(vid):
 
     b = r.library.bundle(vid)
 
-    def aug_dataset(o):
+    def aug_dataset(b):
+        o = b.dataset.dict
+        del o['dataset']
+        o['title'] = b.metadata.about.title
+        o['summary'] = b.metadata.about.summary
+        o['created'] = b.buildstate.new_datetime.isoformat() if b.buildstate.new_datetime else None
+        o['updated'] = b.buildstate.last_datetime.isoformat() if b.buildstate.last_datetime else None
         return o
 
     def aug_partition(o):
-        del o['stats']
+
+        o['csv_url'] = url_for('stream_file', pvid=o['vid'], ct='csv')
+        o['details_url'] = url_for('partition_json', vid=o['vid'])
+        o['description'] = p.table.description
+        o['sub_description'] = p.sub_description
         return o
 
+    def partitions():
+        from ambry.orm import Partition
+        from sqlalchemy.orm import noload, joinedload
+        for p in (b.dataset.query(Partition).filter(Partition.d_vid == b.identity.vid)
+                          .options(noload('*'), joinedload('table')).all()):
+            yield p
+
     return r.json(
-        dataset=aug_dataset(b.dataset.dict),
-        partitions = [ aug_partition(p.dict) for p in b.dataset.partitions ]
+        dataset=aug_dataset(b),
+        partitions = [ aug_partition(p.dict) for p in partitions() ]
+
+    )
+
+
+@app.route('/json/partition/<vid>')
+def partition_json(vid):
+
+    r = aac().renderer
+
+    p = r.library.partition(vid)
+
+    d = p.dict
+    d['csv_url'] = url_for('stream_file', pvid=p.vid, ct='csv')
+
+    d['description'] = p.table.description
+    d['sub_description'] = p.sub_description
+
+    def aug_col(c):
+        d = c.dict
+        d['stats'] = [ s.dict for s in c.stats ]
+        return d
+
+    d['table'] = p.table.dict
+    d['table']['columns'] = [ aug_col(c) for c in p.table.columns ]
+    return r.json(
+        partition = d
 
     )
 
@@ -250,18 +298,27 @@ def get_bundle_partitions(bvid, pvid, ct):
         t=p.table,
         docs=docs,
         **r.cc()
-
     )
 
     return r.render('bundle/partition.html', **cxt)
 
 @app.route('/file/<pvid>.<ct>')
 def stream_file(pvid,ct):
+    from flask import abort
+
+    if ct == 'csv':
+        return stream_csv(pvid)
+    elif ct == 'mpack':
+        return stream_mpack(pvid)
+    else:
+        abort(404)
+
+def stream_csv(pvid):
     from flask import Response
     import cStringIO as StringIO
     import unicodecsv as csv
 
-    r = aac().renderer.cts(ct)
+    r = aac().renderer
     p = r.library.partition(pvid)
 
     if p.is_local:
@@ -269,7 +326,7 @@ def stream_file(pvid,ct):
     else:
         reader = p.remote_datafile.reader
 
-    def yield_row(w, b, row):
+    def yield_csv_row(w, b, row):
         w.writerow(row)
         b.seek(0)
         data = b.read()
@@ -277,23 +334,39 @@ def stream_file(pvid,ct):
         b.truncate()
         return data
 
-
-    def stream():
+    def stream_csv():
         b = StringIO.StringIO()
         writer = csv.writer(b)
 
-        yield yield_row(writer, b, reader.headers)
+        yield yield_csv_row(writer, b, reader.headers)
 
         for row in reader.rows:
-            yield yield_row(writer, b, row)
+            yield yield_csv_row(writer, b, row)
 
 
+    return Response(stream_csv(), mimetype='text/csv')
 
-    return Response(stream(), mimetype='text/csv')
 
-#--------------------------
-# Old Code Below Here
+def stream_mpack(pvid):
+    from flask import Response
+    import cStringIO as StringIO
+    import unicodecsv as csv
+    import msgpack
 
+    r = aac().renderer
+    p = r.library.partition(pvid)
+
+    if p.is_local:
+        reader = p.reader
+    else:
+        reader = p.remote_datafile.reader
+
+    def stream_msgp():
+        yield msgpack.packb(reader.headers)
+        for row in reader.rows:
+            yield msgpack.packb(row)
+
+    return Response(stream_msgp(), mimetype='application/msgpack')
 
 # Really should be  serving this from a static directory, but this
 # is easier for now.
@@ -308,136 +381,3 @@ def js_file(path):
 
     return send_from_directory(*os.path.split(os.path.join(aac().renderer.js_dir,path)))
 
-
-
-@app.route('/databases.<ct>')
-def databases_ct(ct):
-    return renderer(content_type=ct).databases()
-
-
-
-@app.route('/search/place')
-def place_search():
-    """Search for a place, using a single term."""
-
-    return renderer().place_search(term=request.args.get('term'))
-
-
-
-
-
-@app.route('/bundles/summary/<vid>.<ct>')
-def get_bundle_summary(vid, ct):
-    return renderer(content_type=ct).bundle_summary(vid)
-
-
-@app.route('/bundles/<vid>/schema.<ct>')
-def get_schema(vid, ct):
-
-    if ct == 'csv':
-        return renderer().schemacsv(vid)
-    else:
-        return renderer(content_type=ct).schema(vid)
-
-
-
-@app.route('/tables.<ct>')
-def get_tables(ct):
-
-    return renderer(content_type=ct).tables_index()
-
-
-
-
-
-
-
-
-@app.route('/collections.<ct>')
-def get_collections(ct):
-
-    return renderer(content_type=ct).collections_index()
-
-
-@app.route('/stores/<sid>.<ct>')
-def get_store(sid, ct):
-
-    return renderer(content_type=ct).store(sid)
-
-
-@app.route('/stores/<sid>/tables/<tvid>.<ct>')
-def get_store_table(sid, tvid, ct):
-
-    return renderer(content_type=ct).store_table(sid, tvid)
-
-
-@app.route('/sources.<ct>')
-def get_sources(ct):
-
-    return renderer(content_type=ct).sources()
-
-
-@app.route('/warehouses/<wid>/extracts/<tid>.<ct>')
-def get_extract(wid, tid, ct):
-    """Return an extract for a table."""
-
-    from os.path import basename, dirname
-    from ambry.orm.exc import NotFoundError
-    from flask import Response
-
-
-    if ct == 'csv':
-
-        row_gen = warehouse(wid).stream_table(tid, content_type=ct)
-
-        return Response(row_gen(), mimetype='text/csv')
-
-    else:
-
-        try:
-
-            path, attach_filename = warehouse(wid).extract_table(tid, content_type=ct)
-
-            return send_from_directory(directory=dirname(path),
-                                       filename=basename(path),
-                                       as_attachment=True,
-                                       attachment_filename=attach_filename)
-        except NotFoundError:
-            abort(404)
-
-
-@app.route('/warehouses/<wid>/sample/<tid>')
-def get_sample(wid, tid, ct):
-    """Return an extract for a table."""
-
-    # from os.path import basename, dirname
-    from ambry.orm.exc import NotFoundError
-
-    try:
-        warehouse(wid).extract_table(tid, content_type='json')
-        # path, attach_filename = warehouse(wid).extract_table(tid, content_type='json')
-
-    except NotFoundError:
-        abort(404)
-
-
-@app.route('/warehouses/<wid>/extractors/<tid>')
-def get_extractors(wid, tid):
-    from ambry.warehouse.extractors import get_extractors
-
-    return jsonify(results=get_extractors(warehouse(wid).orm_table(tid)))
-
-
-@app.route('/warehouses/download/<wid>.db')
-def get_download(wid):
-    from os.path import basename, dirname
-    w = warehouse(wid)
-    path = w.database.path
-    return send_from_directory(directory=dirname(path),
-                               filename=basename(path),
-                               as_attachment=True,
-                               attachment_filename="{}.db".format(wid))
-
-
-def warehouse(uid):
-    return renderer().library.warehouse(uid)

@@ -33,14 +33,12 @@ class AmbryAppContext(object):
         from ambry.run import get_runconfig
 
         rc = get_runconfig()
-        self.library = Library(rc, read_only=True)
+        self.library = Library(rc, read_only=True, echo = False)
         self.renderer = Renderer(self.library)
 
         import logging
 
         path = self.library.filesystem.logs()
-
-        print('Logging to: ', path)
 
         logging.basicConfig(filename=path, level=logging.DEBUG)
 

@@ -296,24 +296,6 @@ class Renderer(object):
         }
 
 
-        # Old Values
-        return {
-            'url_for': url_for,
-            'iter_as_dict': iter_as_dict,
-            'format_sql': format_sql,
-            'pretty_time': pretty_time,
-
-
-            'table_path': table_path,
-            'partition_path': partition_path,
-            'store_path': store_path,
-            'store_table_path': store_table_path,
-            'proto_vid_path': proto_vid_path,
-            'extractors': extractor_list,
-            'tc_obj': tc_obj,
-            'extract_url': extract_url,
-            'db_download_url': db_download_url,
-            'bundle_sort': lambda l, key: sorted(l, key=lambda x: x['identity'][key])}
 
     def render(self, template, *args, **kwargs):
         from flask import render_template
@@ -321,15 +303,11 @@ class Renderer(object):
         kwargs.update(self.cc())
         kwargs['l'] = self.library
 
-        #if isinstance(template, string_types):
-        #    template = self.env.get_template(template)
-
         if self.content_type == 'json':
             return Response(dumps(kwargs, cls=JSONEncoder, indent=4),mimetype='application/json')
 
         else:
             return render_template(template, *args, **kwargs)
-            #return template.render(*args, **kwargs)
 
     def json(self, **kwargs):
         return Response(dumps(kwargs, cls=JSONEncoder), mimetype='application/json')
