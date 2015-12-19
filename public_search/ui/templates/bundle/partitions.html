@@ -33,7 +33,7 @@
         <tr>
             <td class="col-name"><a href="{{partition_path(p.vid)}}">{{p.name}}</a><br/>
             <small>{{p.vid}}</small></td>
-            <td>{{p.description}}<br/><small>{{ p.sub_description }}</small></td>
+            <td>{{p.description}}<br/><small>{{ p.sub_description }}. {{ p.count }} Rows.</small></td>
             <td ><a class="btn btn-primary btn-sm" href="{{url_for('stream_file', pvid=p.vid, ct='csv')}}">CSV</a></td>
         </tr>
         {% endfor %}

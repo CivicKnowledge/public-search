@@ -10,10 +10,11 @@
 {% block masthead %}{{p.name}}{% endblock %}
 {% block pageheader %}
     <div class="page-header">
-    <div class="summary">{{ p.description }}. {{ p.sub_description }}</div>
+    <div class="summary">{{ p.description }}. {{ p.sub_description }}. {{ p.count }} Rows.</div>
         <div><a class="btn btn-primary btn-sm" href="{{url_for('stream_file', pvid=p.vid, ct='csv')}}">CSV</a>
             From: <a href="{{bundle_path(p.dataset.vid)}}">{{p.dataset.fqname}}</a>.
-            Table: <a href="{{table_path(b,p.table)}}">{{p.table.name}}</a>
+            Table: {{p.table.name}}.
+
         </div>
     </div>
 

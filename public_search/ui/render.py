@@ -3,6 +3,8 @@
 from csv import reader
 import os
 
+from . import app
+
 from pygments import highlight
 from pygments.lexers.sql import SqlLexer
 from pygments.formatters import HtmlFormatter
@@ -293,6 +295,7 @@ class Renderer(object):
             'table_path': table_path,
             'partition_path': partition_path,
             'getattr': getattr,
+            'title': app.config.get('website_title')
         }
 
 

@@ -19,8 +19,14 @@ def page_not_found(e):
 @app.route('/')
 @app.route('/index')
 def index():
+    r = aac().renderer
 
-    return aac().renderer.render('index.html')
+    cxt = dict(
+        bundles=[b for b in r.library.bundles],
+        **r.cc()
+    )
+
+    return r.render('index.html', **cxt)
 
 
 @app.route('/bundles')

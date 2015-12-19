@@ -21,7 +21,8 @@ app_config = {
     'use_proxy': bool(os.getenv('AMBRYDOC_USE_PROXY', False)),
     'debug': bool(os.getenv('AMBRYDOC_HOST', False)),
     'SESSION_TYPE': 'filesystem',
-    'SESSION_FILE_DIR': '/tmp/ambrydoc/sessions/'
+    'SESSION_FILE_DIR': '/tmp/ambrydoc/sessions/',
+    'website_title': os.getenv('AMBRY_UI_TITLE', 'Civic Knowledge Data Search'),
 }
 
 class AmbryAppContext(object):
