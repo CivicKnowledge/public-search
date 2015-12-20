@@ -3,18 +3,14 @@
 {% block head %}
     {{ super() }}
 {% endblock %}
-{% block masthead %}
-    <h1 class="title">Table: {{t.name}}</h1>
-    {% if t.description -%}<p>{{t.description}}</p>{% endif -%}
-    <p>From: <strong>{{b.metadata.about.title+',' if b.metadata.about.title else '' }}</strong>
-        <a href="{{bundle_path(b)}}">{{b.identity.fqname}}</a>.
-        </p>
 
-    {%  if t.foreign_indexes %}
-        <p>Indexes: {{ t.foreign_indexes|join(', ')  }}</p>
-    {%  endif %}
+{% block masthead %}{{t.name}}{% endblock %}
+{% block pageheader %}
+    <div class="page-header">
+        <div class="summary">{{t.description}}. {{ t.columns|length }} Columns.</div>
+    </div>
 
-{% endblock %}
+{%  endblock %}
 
 {% block body %}
 
