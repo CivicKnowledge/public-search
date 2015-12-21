@@ -9,11 +9,6 @@ import functools
 from flask import Flask, g
 from flask.ext.session import Session
 
-root_config = '/etc/ambrydoc/config.yaml'
-user_config = '~/.ambrydoc/config.yaml'
-
-config_paths = [root_config, os.path.expanduser(user_config)]
-
 # Default configuration
 app_config = {
     'host': os.getenv('AMBRYDOC_HOST', 'localhost'),
@@ -57,11 +52,6 @@ def aac(): # Ambry Application Context
 
 
 app = Flask(__name__)
-
-if False:  # How to use a proxy
-    from werkzeug.contrib.fixers import ProxyFix
-
-    app.wsgi_app = ProxyFix(app.wsgi_app)
 
 app.config.update(app_config)
 Session(app)
